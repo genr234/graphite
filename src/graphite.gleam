@@ -15,7 +15,14 @@ pub fn main() {
 // MODEL -----------------------------------------------------------------------
 
 pub type Model {
-  Model(game: String, seed: String, paper: String, status: Status, svg: String)
+  Model(
+    game: String,
+    seed: String,
+    paper: String,
+    theme: String,
+    status: Status,
+    svg: String,
+  )
 }
 
 pub type Status {
@@ -26,7 +33,14 @@ pub type Status {
 
 fn init(_) -> #(Model, Effect(Msg)) {
   let model =
-    Model(game: "golf", seed: random_seed(), paper: "a4", status: Rendering, svg: "")
+    Model(
+      game: "golf",
+      seed: random_seed(),
+      paper: "a4",
+      theme: "parkland",
+      status: Rendering,
+      svg: "",
+    )
   #(model, render(model))
 }
 
@@ -39,6 +53,7 @@ fn random_seed() -> String {
 pub type Msg {
   UserChangedSeed(String)
   UserChangedPaper(String)
+  UserChangedTheme(String)
   UserClickedRandomSeed
   UserClickedGenerate
   UserClickedDownload
@@ -50,6 +65,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
     UserChangedSeed(seed) -> #(Model(..model, seed:), effect.none())
     UserChangedPaper(paper) -> rerender(Model(..model, paper:))
+    UserChangedTheme(theme) -> rerender(Model(..model, theme:))
     UserClickedRandomSeed -> rerender(Model(..model, seed: random_seed()))
     UserClickedGenerate -> rerender(model)
     UserClickedDownload -> #(model, download(model))
@@ -72,13 +88,13 @@ fn rerender(model: Model) -> #(Model, Effect(Msg)) {
 
 fn render(model: Model) -> Effect(Msg) {
   use dispatch <- effect.from
-  use result <- preview(model.game, model.seed, model.paper)
+  use result <- preview(model.game, model.seed, model.paper, model.theme)
   dispatch(EngineRenderedPreview(result))
 }
 
 fn download(model: Model) -> Effect(Msg) {
   use dispatch <- effect.from
-  use result <- download_pdf(model.game, model.seed, model.paper)
+  use result <- download_pdf(model.game, model.seed, model.paper, model.theme)
   dispatch(EngineSavedPdf(result))
 }
 
@@ -87,6 +103,7 @@ fn preview(
   game: String,
   seed: String,
   paper: String,
+  theme: String,
   callback: fn(Result(String, String)) -> Nil,
 ) -> Nil
 
@@ -95,6 +112,7 @@ fn download_pdf(
   game: String,
   seed: String,
   paper: String,
+  theme: String,
   callback: fn(Result(Nil, String)) -> Nil,
 ) -> Nil
 
@@ -112,11 +130,20 @@ fn view(model: Model) -> Element(Msg) {
           event.on_input(UserChangedSeed),
         ]),
       ]),
-      html.button([event.on_click(UserClickedRandomSeed)], [html.text("Shuffle")]),
+      html.button([event.on_click(UserClickedRandomSeed)], [
+        html.text("Shuffle"),
+      ]),
       html.button([event.on_click(UserClickedGenerate)], [html.text("Generate")]),
+      html.select([event.on_change(UserChangedTheme)], [
+        option(model.theme, "parkland", "Parkland"),
+        option(model.theme, "desert", "Desert"),
+        option(model.theme, "island", "Island (B&W)"),
+        option(model.theme, "plain", "Plain (ink saver)"),
+      ]),
       html.select([event.on_change(UserChangedPaper)], [
-        paper_option(model, "a4", "A4"),
-        paper_option(model, "us-letter", "Letter"),
+        option(model.paper, "a4", "A4"),
+        option(model.paper, "us-letter", "Letter"),
+        option(model.paper, "pocket-a4", "Pocket booklet (A4)"),
       ]),
       html.button(
         [
@@ -128,15 +155,30 @@ fn view(model: Model) -> Element(Msg) {
       ),
     ]),
     view_status(model.status),
+    view_print_hint(model.paper),
     element.unsafe_raw_html("", "div", [attribute.class("preview")], model.svg),
   ])
 }
 
-fn paper_option(model: Model, value: String, label: String) -> Element(Msg) {
+fn option(current: String, value: String, label: String) -> Element(Msg) {
   html.option(
-    [attribute.value(value), attribute.selected(model.paper == value)],
+    [attribute.value(value), attribute.selected(current == value)],
     label,
   )
+}
+
+fn view_print_hint(paper: String) -> Element(Msg) {
+  case paper {
+    "pocket-a4" ->
+      html.p([attribute.class("hint")], [
+        html.text(
+          "Print double-sided, flipping on the long edge. Cut each sheet along the dashed line, "
+          <> "stack the halves in order (top half, bottom half, next sheet…) each inside the last, "
+          <> "then fold and staple along the middle.",
+        ),
+      ])
+    _ -> element.none()
+  }
 }
 
 fn view_status(status: Status) -> Element(Msg) {

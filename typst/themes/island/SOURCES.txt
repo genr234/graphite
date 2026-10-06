@@ -1,0 +1,12 @@
+fairway.png  <- monochrome-pirates/Monochrome/Tiles tile 0
+rough-1.png  <- monochrome-pirates/Monochrome/Tiles tile 1
+sand-1.png  <- monochrome-pirates/Monochrome/Tiles tile 2
+water-1.png  <- monochrome-pirates/Monochrome/Tiles tile 17
+water-2.png  <- monochrome-pirates/Monochrome/Tiles tile 18
+tree-1.png  <- monochrome-pirates/Monochrome/Tiles tile 109
+tree-2.png  <- monochrome-pirates/Monochrome/Tiles tile 110
+tree-3.png  <- monochrome-pirates/Monochrome/Tiles tile 104
+flag.png  <- monochrome-pirates/Monochrome/Tiles tile 87
+tee.png  <- monochrome-pirates/Monochrome/Tiles tile 85
+bigfoot.png  <- monochrome-pirates/Monochrome/Tiles tile 124
+arrow.png  <- original pixel art

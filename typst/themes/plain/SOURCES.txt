@@ -1,0 +1,2 @@
+bigfoot.png  <- desert-shooter-pack/PNG/Enemies/Tiles tile 12
+flag.png, tee.png, arrow.png, tree.png  <- original pixel art

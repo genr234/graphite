@@ -21,10 +21,19 @@ npm run dev          # http://localhost:5173
 ## Native render
 
 ```sh
-scripts/render.sh golf my-seed us-letter out/golf.pdf
+scripts/render.sh golf my-seed us-letter parkland out/golf.pdf
 ```
 
-The same seed produces the same notebook natively and in the browser.
+Paper is `a4`, `us-letter`, or `pocket-a4`: A6 pages imposed four to a side on
+A4, to print double-sided (long-edge flip), cut in half, nest and fold into a
+pocket booklet. The same seed produces the same notebook natively and in the
+browser.
+
+## Themes
+
+Pixel themes use tiles from [Kenney](https://kenney.nl)'s CC0 packs (Tiny Town,
+Tiny Battle, Desert Shooter Pack, Monochrome Pirates). See
+`typst/themes/LICENSE-kenney.txt` and each theme's `SOURCES.txt`.
 
 ## Test
 
