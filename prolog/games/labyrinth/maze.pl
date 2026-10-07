@@ -6,8 +6,7 @@
                             linked/3,
                             step/3,
                             distances/3,
-                            reachable/3,
-                            shuffle//2
+                            reachable/3
                           ]).
 
 /** <module> LABYRINTH maze
@@ -233,11 +232,3 @@ bfs([C|Q], Doors, A0, A) :-
 reachable(S, Doors, Rooms) :-
     distances(S, Doors, Pairs),
     pairs_keys(Pairs, Rooms).
-
-%!  shuffle(+List, -Shuffled)// is det.
-shuffle([], []) --> !.
-shuffle(List, [X|Xs]) -->
-    { length(List, N) },
-    rand_int(0, N - 1, I),
-    { nth0(I, List, X, Rest) },
-    shuffle(Rest, Xs).

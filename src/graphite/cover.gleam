@@ -20,6 +20,7 @@ const theme = "parkland"
 
 pub type Cover {
   Golf
+  Dungeon
   Labyrinth
 }
 
@@ -27,6 +28,7 @@ pub type Cover {
 pub fn view(cover: Cover, seed: Int) -> Element(msg) {
   case cover {
     Golf -> golf(seed)
+    Dungeon -> dungeon(seed)
     Labyrinth -> labyrinth(seed)
   }
 }
@@ -123,6 +125,49 @@ fn rough(r: Rng) -> #(Dict(#(Int, Int), Ground), Rng) {
       #(r, #(xy, Rough(variant)))
     })
   #(dict.from_list(pairs), r)
+}
+
+// DUNGEON ---------------------------------------------------------------------
+
+/// A dungeon floor seen from above: a stone border, one inner wall with a
+/// gap, the hero near the bottom, the stairs up top, and loot and monsters
+/// scattered below the label.
+fn dungeon(seed: Int) -> Element(msg) {
+  let r = rng.new(seed)
+  let #(wall_y, r) = rng.between(r, 5, 6)
+  let #(gap_x, r) = rng.between(r, 1, 5)
+  let #(hero_x, r) = rng.between(r, 1, 5)
+  let #(stairs_x, r) = rng.between(r, 1, 5)
+
+  let #(_, cells) =
+    list.map_fold(grid(), r, fn(r, xy) {
+      let #(x, y) = xy
+      let border = x == 0 || y == 0 || x == cols - 1 || y == rows - 1
+      let wall = border || { y == wall_y && x != gap_x }
+      case wall {
+        True -> #(r, "wall")
+        False if xy == #(hero_x, 8) -> #(r, "hero")
+        False if xy == #(stairs_x, 1) -> #(r, "stairs")
+        False if y >= 4 -> {
+          let #(roll, r) = rng.int(r, 100)
+          let thing = case roll {
+            _ if roll < 14 -> "enemy"
+            _ if roll < 26 -> "coin"
+            _ if roll < 31 -> "heart"
+            _ -> "floor"
+          }
+          #(r, thing)
+        }
+        False -> #(r, "floor")
+      }
+    })
+
+  html.div(
+    [attribute.class("cover cover--dungeon"), attribute.aria_hidden(True)],
+    list.map(cells, fn(kind) {
+      html.div([attribute.class("dng-cell dng-" <> kind)], [])
+    }),
+  )
 }
 
 // LABYRINTH -------------------------------------------------------------------

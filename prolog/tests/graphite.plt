@@ -194,3 +194,158 @@ test(json_roundtrip) :-
     assertion(length(Rooms, 50)).
 
 :- end_tests(labyrinth).
+
+
+:- begin_tests(dungeon).
+
+:- use_module('../games/dungeon/rules').
+:- use_module('../games/dungeon/evaluate').
+:- use_module('../games/dungeon/simulate').
+:- use_module('../games/dungeon/stock').
+
+% A full notebook takes a few seconds, so each seed is generated once.
+doc(Seed, Doc) :-
+    format(atom(Key), "dungeon_test_~w", [Seed]),
+    (   nb_current(Key, Doc) -> true
+    ;   generate(dungeon, Seed, Doc), nb_setval(Key, Doc)
+    ).
+
+test(deterministic) :-
+    doc("crypt", A),
+    generate(dungeon, "crypt", B),
+    assertion(A =@= B).
+
+test(notebook_shape, [forall(member(Seed, ["crypt", 7]))]) :-
+    doc(Seed, Doc),
+    length(Doc.floors, 30),
+    assertion(Doc.shops == [5, 10, 15, 20, 25]),
+    forall(member(F, Doc.floors),
+           ( length(F.rows, 13),
+             forall(member(R, F.rows), assertion(string_length(R, 13))),
+             assertion(open_cell(F, F.start)),
+             assertion(open_cell(F, F.stairs)),
+             findall([X, Y], ( member(O, F.objects), X = O.x, Y = O.y ), Spots),
+             forall(member(P, Spots), assertion(open_cell(F, P))),
+             msort([F.start, F.stairs|Spots], Sorted), sort(Sorted, Unique),
+             assertion(Sorted == Unique),
+             assertion(number(F.expected)) )).
+
+% Every floor can be finished and has no traps, checked again from the JSON.
+test(floors_playable) :-
+    doc("crypt", Doc),
+    forall(member(F, Doc.floors),
+           ( doc_floor(F, Floor, Start),
+             evaluate_floor(Floor, Start, 1000, Stats),
+             assertion(Stats = stats(_, _, _)) )).
+
+% Every locked door has its key on the same floor.
+test(keys_with_locks, [forall(member(Seed, ["crypt", 7]))]) :-
+    doc(Seed, Doc),
+    forall(( member(F, Doc.floors), member(L, F.objects), L.kind == "lock" ),
+           assertion(( member(K, F.objects), K.kind == "key" ))).
+
+% Floors offer a choice: most of the loot is off the quick way down, and
+% rushing costs about as much HP as the floor's band says.
+test(stocked_for_choices, [forall(member(Seed, ["crypt", 7]))]) :-
+    doc(Seed, Doc),
+    length(Doc.floors, NF),
+    findall(F, ( member(F, Doc.floors), B = F.balance,
+                 B.route_loot =< 0.4 * B.loot,
+                 T is (F.number - 1) / (NF - 1),
+                 damage_band(T, Lo, Hi),
+                 B.damage >= Lo - 0.5, B.damage =< Hi + 0.5 ), Good),
+    length(Good, NG),
+    assertion(NG >= NF - 2).
+
+% Chests always have a guard next to them.
+test(chests_guarded, [forall(member(Seed, ["crypt", 7]))]) :-
+    doc(Seed, Doc),
+    forall(( member(F, Doc.floors), get_dict(objects, F, Os),
+             member(C, Os), get_dict(kind, C, chest) ),
+           assertion(guarded(C, Os))).
+
+guarded(C, Os) :-
+    member(E, Os), get_dict(kind, E, enemy),
+    abs(E.x - C.x) =< 1, abs(E.y - C.y) =< 1, !.
+
+% The simulated explorer gets through a notebook without dying every
+% other floor, and finishes floors in a sensible number of turns.
+test(simulated_play) :-
+    doc("crypt", Doc),
+    play_notebook(Doc, explorer, 1, R),
+    assertion(R.deaths =< 8),
+    forall(member(F, R.floors), assertion(F.turns =< 60)).
+
+test(diagonal_example) :-
+    % Odd roll from the bottom row: NE, a wall, SE, a wall, then NE.
+    floor_from(["######",
+                 ".....S",
+                 "......"], F),
+    floor_index(F, 0-2, Start), floor_index(F, 3-1, End),
+    findall(R, turn(F, at(Start, none, false), 3, R), Rs),
+    assertion(memberchk(at(End, ne, false), Rs)).
+
+test(orthogonal_example) :-
+    % A 6 east: two squares, a wall, south to the edge, then east again.
+    floor_from(["...#..S",
+                "...#...",
+                "......."], F),
+    floor_index(F, 0-0, Start), floor_index(F, 4-2, End),
+    findall(R, turn(F, at(Start, none, false), 6, R), Rs),
+    assertion(memberchk(at(End, e, false), Rs)).
+
+test(full_move_forced) :-
+    floor_from([".........S"], F),
+    floor_index(F, 1-0, Start), floor_index(F, 3-0, End),
+    findall(R, turn(F, at(Start, none, false), 2, R), Rs),
+    assertion(Rs == [at(End, e, false)]).
+
+test(no_going_back) :-
+    floor_from([".........S"], F),
+    floor_index(F, 4-0, Start),
+    findall(R, turn(F, at(Start, e, false), 2, R), Rs),
+    floor_index(F, 6-0, End),
+    assertion(Rs == [at(End, e, false)]).
+
+test(web_stops) :-
+    floor_from(["..W......S"], F),
+    floor_index(F, 0-0, Start), floor_index(F, 2-0, Web),
+    findall(R, turn(F, at(Start, none, false), 4, R), Rs),
+    assertion(Rs == [at(Web, e, false)]).
+
+test(teleporter_carries_on) :-
+    floor_from(["..T...T....S"], F),
+    floor_index(F, 0-0, Start), floor_index(F, 8-0, End),
+    findall(R, turn(F, at(Start, none, false), 4, R), Rs),
+    assertion(Rs == [at(End, e, false)]).
+
+test(lock_needs_key) :-
+    floor_from(["..L..S"], F),
+    floor_index(F, 0-0, Start),
+    assertion(\+ turn(F, at(Start, none, false), 4, exit)),
+    assertion(turn(F, at(Start, none, true), 4, exit)).
+
+test(stairs_in_passing) :-
+    floor_from(["..S......."], F),
+    floor_index(F, 0-0, Start),
+    assertion(turn(F, at(Start, none, false), 6, exit)).
+
+test(json_roundtrip) :-
+    generate_json("dungeon", "crypt", Json),
+    atom_json_dict(Json, Dict, []),
+    assertion(Dict.game == "dungeon").
+
+open_cell(F, [X, Y]) :-
+    nth0(Y, F.rows, Row),
+    sub_string(Row, X, 1, _, ".").
+
+floor_from(Rows, Floor) :-
+    Rows = [R0|_], string_length(R0, W), length(Rows, H),
+    atomic_list_concat(Rows, All), atom_codes(All, Codes),
+    G =.. [g|Codes],
+    findall(I, nth1(I, Codes, 0'T), Ts),
+    ( Ts = [A, B] -> Tele = tp(A, B) ; Tele = none ),
+    nth1(S, Codes, 0'S), !,
+    make_floor(W, H, G, Tele, S, Floor).
+
+:- end_tests(dungeon).

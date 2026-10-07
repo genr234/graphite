@@ -1,7 +1,8 @@
 :- module(rng, [ seed_state/2,
                  rand_int//3,
                  rand_member//2,
-                 rand_chance//2
+                 rand_chance//2,
+                 shuffle//2
                ]).
 
 /** <module> Deterministic seeded randomness
@@ -56,3 +57,11 @@ rand_member(X, List) -->
 rand_chance(P, Bool) -->
     rand_int(0, 999999, X),
     { X < P * 1000000 -> Bool = true ; Bool = false }.
+
+%!  shuffle(+List, -Shuffled)// is det.
+shuffle([], []) --> !.
+shuffle(List, [X|Xs]) -->
+    { length(List, N) },
+    rand_int(0, N - 1, I),
+    { nth0(I, List, X, Rest) },
+    shuffle(Rest, Xs).

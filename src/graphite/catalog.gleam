@@ -39,6 +39,18 @@ pub fn titles() -> List(Title) {
       ],
     ),
     Title(
+      id: "dungeon",
+      name: "Dungeon",
+      players: "Solo",
+      dice: "1 d6",
+      contents: "30 floors, 5 shops",
+      pitch: "Roll to move: odd goes diagonal, even goes straight, and walls "
+        <> "turn you aside. Grab coins, dodge monsters, find hearts and take "
+        <> "the stairs down to the treasure.",
+      cover: cover.Dungeon,
+      themes: [],
+    ),
+    Title(
       id: "labyrinth",
       name: "Labyrinth",
       players: "Solo",

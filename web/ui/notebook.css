@@ -185,6 +185,53 @@
   }
 }
 
+/* Dungeon cover (DUNGEON): dark flagstones inside grey stone blocks */
+.cover--dungeon {
+  background: #2c2926;
+}
+
+.cover--dungeon > .dng-cell {
+  --dot: radial-gradient(circle, #5a544d 0 7%, transparent 8%);
+  background: var(--dot), #3a3632;
+}
+
+.dng-wall {
+  background: #8d867c !important;
+  box-shadow:
+    inset 0 0 0 calc(var(--tile) * 0.05) #2c2926,
+    inset calc(var(--tile) * 0.1) calc(var(--tile) * 0.1) 0 calc(var(--tile) * 0.05) #a39b90;
+  border-radius: calc(var(--tile) * 0.14);
+}
+
+.cover--dungeon > .dng-hero {
+  background:
+    radial-gradient(circle at 50% 50%, #f4efe6 0 30%, #2c2926 31% 36%, transparent 37%),
+    #3a3632;
+}
+
+.cover--dungeon > .dng-stairs {
+  background:
+    linear-gradient(#3a3632 0 0) 0 0 / 34% 66% no-repeat,
+    linear-gradient(#3a3632 0 0) 0 0 / 67% 33% no-repeat,
+    #a39b90;
+}
+
+.cover--dungeon > .dng-coin {
+  background: radial-gradient(circle, #e2b33c 0 22%, #9a7420 23% 27%, transparent 28%), #3a3632;
+}
+
+.cover--dungeon > .dng-heart {
+  background: radial-gradient(circle, #e0607a 0 24%, transparent 25%), #3a3632;
+}
+
+.cover--dungeon > .dng-enemy {
+  background:
+    radial-gradient(circle at 38% 46%, #f4efe6 0 6%, transparent 7%),
+    radial-gradient(circle at 62% 46%, #f4efe6 0 6%, transparent 7%),
+    radial-gradient(circle at 50% 55%, #8e2f3a 0 30%, transparent 31%),
+    #3a3632;
+}
+
 /* Maze cover (LABYRINTH): stone floor, dark walls drawn once per edge */
 .cover--maze {
   background: #3a3632;

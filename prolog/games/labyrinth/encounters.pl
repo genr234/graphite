@@ -24,7 +24,6 @@ Adjacent faces with the same outcome print as one wide cell.
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 :- use_module('../../rng').
-:- use_module(maze, [shuffle//2]).
 :- use_module(monster).
 
 % Weapons -------------------------------------------------------------------
