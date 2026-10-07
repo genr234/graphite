@@ -1,0 +1,445 @@
+/* <graphite-scroller> shadow styles. Tokens inherit from tokens.css. */
+
+:host {
+  --rail-w: 44px;
+  --rail-inset: var(--s-3);
+  --gutter: calc(var(--rail-w) + var(--rail-inset) + var(--s-4));
+  position: relative;
+  display: block;
+  min-height: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* Viewport: scrolls natively, with the native bar hidden ----------------- */
+
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  padding: var(--s-6) var(--gutter);
+  scrollbar-width: none;
+  outline: none;
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.viewport:focus-visible ~ .lip {
+  box-shadow:
+    var(--recessed),
+    inset 0 0 0 2px var(--accent);
+}
+
+/* The tray's recess, redrawn above the paper so it scrolls under the lip */
+.lip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--recessed);
+  pointer-events: none;
+}
+
+::slotted(*) {
+  transition: opacity 200ms ease-out;
+}
+
+:host([busy]:not([empty])) ::slotted(*) {
+  opacity: 0.45;
+  transition-delay: 150ms;
+}
+
+/* Rail: a slider fader standing on the tray floor ------------------------- */
+
+.rail {
+  position: absolute;
+  top: var(--rail-inset);
+  right: var(--rail-inset);
+  bottom: var(--rail-inset);
+  width: var(--rail-w);
+  border-radius: var(--r-well);
+  background: linear-gradient(var(--plate), var(--chassis));
+  box-shadow: var(--plate-lift);
+  touch-action: none;
+  user-select: none;
+  transition: opacity 200ms ease-out;
+}
+
+:host([static]) .rail,
+:host([empty]) .rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.track {
+  position: absolute;
+  inset: var(--s-3) 6px;
+  cursor: pointer;
+}
+
+/* The groove the thumb rides in */
+.slot {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 21px;
+  width: 6px;
+  border-radius: var(--r-round);
+  background: var(--edge-strong);
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.3),
+    0 1px 0 var(--hi);
+}
+
+/* Scale: one tick per page, longer where a section starts */
+.tick {
+  position: absolute;
+  right: 14px;
+  width: 3px;
+  height: 1px;
+  margin-top: -0.5px;
+  background: var(--engrave);
+  box-shadow: 0 1px 0 var(--hi-soft);
+  transition: background var(--press), width var(--press);
+}
+
+.tick--continued {
+  width: 2px;
+  opacity: 0.5;
+}
+
+.tick--major {
+  width: 7px;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--ink-soft);
+}
+
+.tick--major[data-short]::before {
+  content: attr(data-short);
+  position: absolute;
+  right: calc(100% + 2px);
+  top: 50%;
+  transform: translateY(-50%);
+  font: 700 9px/1 var(--font-mono);
+  color: var(--engrave);
+  text-shadow: var(--engraved);
+}
+
+.tick.is-current {
+  width: 7px;
+  background: var(--accent);
+}
+
+.tick.is-current.tick--major::before {
+  color: var(--accent);
+}
+
+.tick.is-hover {
+  width: 9px;
+  background: var(--ink);
+}
+
+/* Thumb: a fader cap with an orange index line at its centre */
+.thumb {
+  position: absolute;
+  top: 0;
+  left: 15px;
+  width: 18px;
+  border-radius: 5px;
+  background: linear-gradient(var(--key-top), var(--key-bottom));
+  box-shadow: var(--raised);
+  cursor: grab;
+  will-change: transform;
+}
+
+.thumb::before,
+.thumb::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+}
+
+/* Grip: engraved ridges either side of the index */
+.thumb::before {
+  height: 11px;
+  margin-top: -5.5px;
+  background: repeating-linear-gradient(
+    var(--edge-strong) 0 1px,
+    var(--hi) 1px 2px,
+    transparent 2px 4px
+  );
+  opacity: 0.5;
+  mask: linear-gradient(90deg, #000 0 100%) top / 100% 3px no-repeat,
+    linear-gradient(90deg, #000 0 100%) bottom / 100% 3px no-repeat;
+}
+
+.thumb::after {
+  left: -3px;
+  right: -3px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--accent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+:host([dragging]) .thumb {
+  cursor: grabbing;
+  background: linear-gradient(var(--key-down-top), var(--key-down-bottom));
+  box-shadow: var(--raised-down);
+}
+
+:host([dragging]) .viewport {
+  scroll-behavior: auto;
+}
+
+/* Flag: names the page under the pointer, or the current one while scrolling */
+.flag {
+  position: absolute;
+  right: calc(var(--rail-w) + var(--rail-inset) + var(--s-2));
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 3px var(--s-3);
+  max-width: min(320px, 70%);
+  padding: 7px var(--s-3) 8px;
+  border-radius: var(--r-key);
+  background:
+    linear-gradient(var(--readout-glass), transparent 50%),
+    var(--readout);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.5),
+    0 6px 16px -6px var(--shade-strong);
+  color: var(--readout-ink);
+  transform: translate(6px, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+/* Pointer towards the rail */
+.flag::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  background: var(--readout);
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+:host([scrolling]) .flag {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.flag small {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  font: var(--t-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--readout-ink) 55%, transparent);
+}
+
+.flag small:empty {
+  display: none;
+}
+
+.flag b {
+  overflow: hidden;
+  font: 600 14px/1.1 var(--font-mono);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.flag em {
+  justify-self: end;
+  font: 500 11px/1 var(--font-mono);
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* Busy: shown while the engine generates, after a short grace period ----- */
+
+.busy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 calc(var(--rail-w) + var(--rail-inset));
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 200ms ease-out,
+    visibility 0s 200ms;
+}
+
+:host([busy]) .busy {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 200ms ease-out 150ms,
+    visibility 0s 150ms;
+}
+
+/* Before the first preview arrives: a blank sheet waiting in the tray */
+.blank {
+  display: none;
+  grid-area: 1 / 1;
+  align-self: start;
+  width: min(820px, calc(100% - 2 * var(--s-4)));
+  margin-top: var(--s-6);
+  aspect-ratio: 210 / 297;
+  padding: 9% 8%;
+  border-radius: 2px;
+  background: var(--paper);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.04),
+    0 2px 4px rgb(0 0 0 / 0.08),
+    0 18px 40px -16px rgb(0 0 0 / 0.35);
+}
+
+:host([empty]) .blank {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.blank i {
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #eeede9 0 40%, #f8f7f4 50%, #eeede9 60% 100%) 0 0 / 300% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+.blank i:nth-child(1) {
+  width: 46%;
+  height: 26px;
+  margin-bottom: 10px;
+}
+
+.blank i:nth-child(3) {
+  width: 88%;
+}
+
+.blank i:nth-child(4) {
+  width: 64%;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* A small plate with a print head sweeping its slot */
+.panel {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-well);
+  background: linear-gradient(var(--plate), var(--chassis));
+  box-shadow:
+    var(--plate-lift),
+    0 20px 40px -12px var(--shade-strong);
+}
+
+
+.label {
+  font: var(--t-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--engrave);
+  text-shadow: var(--engraved);
+}
+
+.feed {
+  position: relative;
+  width: 96px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--r-round);
+  background: var(--edge-strong);
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.3),
+    0 1px 0 var(--hi);
+}
+
+.feed i {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 0;
+  width: 28%;
+  border-radius: var(--r-round);
+  background: linear-gradient(#ff7a3d, var(--accent) 50%, var(--accent-deep));
+  animation: sweep 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(1px);
+  }
+  to {
+    transform: translateX(calc(96px - 100% - 1px));
+  }
+}
+
+
+/* Small screens: the rail narrows and the sheet takes the freed width ---- */
+
+@media (max-width: 640px) {
+  :host {
+    --rail-w: 40px;
+    --rail-inset: var(--s-2);
+  }
+
+  .viewport {
+    padding: var(--s-4) var(--gutter) var(--s-4) var(--s-2);
+  }
+
+  .busy {
+    padding: 0 var(--gutter) 0 var(--s-2);
+  }
+
+  .blank {
+    width: 100%;
+    margin-top: var(--s-4);
+  }
+
+  .track {
+    inset: var(--s-3) 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blank i {
+    animation: none;
+  }
+
+  .feed i {
+    animation-duration: 3s;
+  }
+
+  .flag,
+  .tick,
+  ::slotted(*) {
+    transition: none;
+  }
+}

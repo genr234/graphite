@@ -35,6 +35,13 @@ Pixel themes use tiles from [Kenney](https://kenney.nl)'s CC0 packs (Tiny Town,
 Tiny Battle, Desert Shooter Pack, Monochrome Pirates). See
 `typst/themes/LICENSE-kenney.txt` and each theme's `SOURCES.txt`.
 
+LABYRINTH's random monsters are put together from Kenney's
+[Monster Builder Pack](https://kenney.nl/assets/monster-builder-pack) (CC0),
+in `typst/monsters/`.
+
+UI icons are [pixelarticons](https://pixelarticons.com) (MIT, Gerrit Halfmann),
+compiled in by `scripts/icons.mjs`.
+
 ## Test
 
 ```sh

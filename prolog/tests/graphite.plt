@@ -102,3 +102,95 @@ terrain(Hole, [X, Y], Code) :-
     string_code(I, Row, Code).
 
 :- end_tests(golf).
+
+:- begin_tests(labyrinth).
+
+:- use_module('../games/labyrinth/maze').
+:- use_module('../games/labyrinth/encounters').
+
+seeds([a, b, c, d, e, f, g, h]).
+
+test(deterministic) :-
+    generate(labyrinth, "maze", A),
+    generate(labyrinth, "maze", B),
+    assertion(A =@= B).
+
+test(rooms_numbered_once, [forall(( seeds(Ss), member(Seed, Ss) ))]) :-
+    generate(labyrinth, Seed, Doc),
+    findall(N, ( member(R, Doc.rooms), get_dict(number, R, N) ), Ns),
+    numlist(1, 50, All),
+    assertion(Ns == All),
+    member(R1, Doc.rooms), R1.number == 1, !,
+    assertion([R1.x, R1.y, R1.level] == [0, 4, 1]),
+    assertion(R1.kind == start).
+
+% Every doorway shows up in both rooms, with the same lock.
+test(exits_symmetric, [forall(( seeds(Ss), member(Seed, Ss) ))]) :-
+    generate(labyrinth, Seed, Doc),
+    findall(A-B-L, ( member(R, Doc.rooms), get_dict(number, R, A),
+                     get_dict(exits, R, Es), member(E, Es),
+                     get_dict(to, E, B), get_dict(lock, E, L) ), Doors),
+    forall(member(A-B-L, Doors), assertion(memberchk(B-A-L, Doors))).
+
+test(one_lair_two_keys, [forall(( seeds(Ss), member(Seed, Ss) ))]) :-
+    generate(labyrinth, Seed, Doc),
+    findall(R, ( member(R, Doc.rooms), get_dict(boss, R, true) ), Lairs),
+    assertion(length(Lairs, 1)),
+    findall(K, ( member(R, Doc.rooms), get_dict(key, R, K) ), Keys),
+    msort(Keys, Sorted),
+    assertion(Sorted == ["A", "B"]).
+
+% Play the locks: key A is reachable with no keys, key B with key A,
+% and the lair (and so every room) with both.
+test(keys_before_locks, [forall(( seeds(Ss), member(Seed, Ss) ))]) :-
+    seed_state(Seed, S0),
+    phrase(maze(maze(Doors, Lair, Locks, Keys)), [S0], [_]),
+    start(S),
+    memberchk("A"-KA, Keys), memberchk("B"-KB, Keys),
+    open_doors(Doors, Locks, [], D0), reachable(S, D0, R0),
+    open_doors(Doors, Locks, ["A"], D1), reachable(S, D1, R1),
+    open_doors(Doors, Locks, ["A", "B"], D2), reachable(S, D2, R2),
+    assertion(memberchk(KA, R0)),
+    assertion(\+ memberchk(KB, R0)),
+    assertion(memberchk(KB, R1)),
+    assertion(\+ memberchk(Lair, R1)),
+    cells(Cells0),
+    msort(Cells0, Cells),
+    assertion(R2 == Cells).
+
+open_doors(Doors, Locks, Held, Open) :-
+    exclude([D]>>( memberchk(D-K, Locks), \+ memberchk(K, Held) ), Doors, Open).
+
+% Seeds 11, 19 and 29 once left no room for the first armoury.
+test(always_generates) :-
+    forall(between(1, 40, Seed), assertion(generate(labyrinth, Seed, _))).
+
+% Enemies without a fixed look get a random monster; the rest keep theirs.
+test(random_monsters, [forall(( seeds(Ss), member(Seed, Ss) ))]) :-
+    generate(labyrinth, Seed, Doc),
+    forall(( member(R, Doc.rooms), get_dict(art, R, monster) ),
+           ( get_dict(monster, R, M),
+             assertion(memberchk(M.body, ["A", "B", "C", "D", "E", "F"])),
+             assertion(memberchk(M.eyes, [1, 2, 3])) )),
+    forall(( member(R, Doc.rooms), get_dict(enemy, R, "GIANT RAT") ),
+           assertion(R.art == rat)).
+
+test(battle_cost) :-
+    % Hits on 3-4, -1 HP on 1 and 6: 3 hearts at 1 DMG need 3 hits, each
+    % costing on average (1+1)/2 = 1 HP.
+    battle_cost([hp(-1), miss, hit, hit, miss, hp(-1)], 3, 1, HP),
+    assertion(HP =:= 3).
+
+test(table_runs) :-
+    table_dict([bust, add, add, add, add, add], Cells),
+    assertion(Cells = [_{from: 1, to: 1, label: "BUST"},
+                       _{from: 2, to: 6, label: _}]).
+
+test(json_roundtrip) :-
+    generate_json("labyrinth", "json", Json),
+    atom_json_dict(Json, Dict, []),
+    assertion(Dict.game == "labyrinth"),
+    Rooms = Dict.rooms,
+    assertion(length(Rooms, 50)).
+
+:- end_tests(labyrinth).

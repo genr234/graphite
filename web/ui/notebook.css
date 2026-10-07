@@ -1,0 +1,212 @@
+/* Notebook and shelf. Built from tokens.css; see web/ui/README.md.
+ *
+ * Covers are 7 × 10 pixel tiles. Tiles are 16px art, so --tile must be a
+ * multiple of 16 to keep every art pixel square and crisp. */
+
+/* Notebook: a pocket notebook lying on the shelf ------------------------- */
+
+.notebook {
+  --tile: 32px;
+  --spine: calc(var(--tile) * 0.4);
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(var(--tile) * 7);
+  height: calc(var(--tile) * 10);
+  border-radius: 3px 10px 10px 3px;
+  color: inherit;
+  text-decoration: none;
+  /* Stacked page edges on the fore-edge and foot, then the cast shadow. */
+  box-shadow:
+    1.5px 1.5px 0 0 var(--paper),
+    2px 2px 0 0 var(--edge),
+    3.5px 3.5px 0 0 var(--paper),
+    4px 4px 0 0 var(--edge-strong),
+    0 6px 10px -4px var(--shade-strong),
+    0 22px 34px -14px var(--shade-strong);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notebook:hover,
+.notebook:focus-visible {
+  transform: translateY(-6px) rotate(-1deg);
+  box-shadow:
+    1.5px 1.5px 0 0 var(--paper),
+    2px 2px 0 0 var(--edge),
+    3.5px 3.5px 0 0 var(--paper),
+    4px 4px 0 0 var(--edge-strong),
+    0 12px 16px -6px var(--shade-strong),
+    0 36px 48px -18px var(--shade-strong);
+}
+
+.notebook:active {
+  transform: translateY(-1px);
+  transition-duration: 80ms;
+}
+
+.notebook:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 8px;
+}
+
+/* Cover: the pixel scene, lit from the top left like everything else */
+.notebook-cover {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #6a9c48;
+}
+
+.notebook-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.12) var(--spine),
+      rgb(255 255 255 / 0.22) calc(var(--spine) + 1px), transparent calc(var(--spine) + 3px)),
+    linear-gradient(160deg, rgb(255 255 255 / 0.2), transparent 35%, transparent 65%, rgb(0 0 0 / 0.22));
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 1px rgb(255 255 255 / 0.15);
+  border-radius: inherit;
+}
+
+.cover {
+  display: grid;
+  grid-template-columns: repeat(7, var(--tile));
+  grid-template-rows: repeat(10, var(--tile));
+}
+
+.cover > div {
+  background-size: var(--tile) var(--tile);
+  image-rendering: pixelated;
+}
+
+/* Label: a paper sticker, always light whatever the UI theme */
+.notebook-label {
+  position: absolute;
+  top: calc(var(--tile) * 2.5);
+  left: calc(var(--spine) + var(--tile) * 0.6);
+  right: calc(var(--tile) * 1.4);
+  display: grid;
+  gap: calc(var(--tile) * 0.15);
+  padding: calc(var(--tile) * 0.35) calc(var(--tile) * 0.4);
+  border-radius: 3px;
+  background:
+    linear-gradient(transparent calc(100% - 1px), rgb(0 0 0 / 0.06) 0) 0 0 / 100% calc(var(--tile) * 0.3),
+    #fbfaf4;
+  box-shadow:
+    0 1px 0 rgb(0 0 0 / 0.08),
+    0 2px 4px -1px rgb(0 0 0 / 0.45),
+    inset 0 0 0 1px rgb(0 0 0 / 0.05);
+  color: #2c2c2a;
+  transform: rotate(-0.6deg);
+}
+
+.notebook-title {
+  font: 700 calc(var(--tile) * 0.62) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.notebook-number {
+  font: 500 calc(var(--tile) * 0.3) / 1 var(--font-mono);
+  letter-spacing: 0.1em;
+  color: #8f8c84;
+}
+
+/* Elastic band, holding the notebook shut */
+.notebook-band {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  right: calc(var(--tile) * 0.6);
+  width: calc(var(--tile) * 0.28);
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1d1d1c, #46464a 45%, #2a2a2b 70%, #151515);
+  box-shadow:
+    -2px 0 3px rgb(0 0 0 / 0.35),
+    1px 0 1px rgb(0 0 0 / 0.25);
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: top;
+}
+
+.notebook:hover .notebook-band,
+.notebook:focus-visible .notebook-band {
+  transform: scaleX(0.85) translateX(1px);
+}
+
+/* Shelf: notebooks laid out on the bare page ------------------------------ */
+
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--s-6) var(--s-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shelf-item {
+  display: flex;
+  justify-content: center;
+}
+
+/* One notebook: show it as a feature */
+.shelf-item:only-child .notebook {
+  --tile: 48px;
+}
+
+@media (max-width: 720px) {
+  .shelf-item:only-child .notebook {
+    --tile: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notebook,
+  .notebook-band {
+    transition: none;
+  }
+
+  .notebook:hover,
+  .notebook:focus-visible,
+  .notebook:active {
+    transform: none;
+  }
+
+  .notebook:hover .notebook-band,
+  .notebook:focus-visible .notebook-band {
+    transform: none;
+  }
+}
+
+/* Maze cover (LABYRINTH): stone floor, dark walls drawn once per edge */
+.cover--maze {
+  background: #3a3632;
+}
+
+.cover--maze > .maze-cell {
+  --wall: calc(var(--tile) * 0.14);
+  background: #cfc6b6;
+  box-shadow:
+    inset 0 calc(var(--wall) * var(--n, 0)) 0 #2a2623,
+    inset calc(var(--wall) * -1 * var(--e, 0)) 0 0 #2a2623,
+    inset 0 calc(var(--wall) * -1 * var(--s, 0)) 0 #2a2623,
+    inset calc(var(--wall) * var(--w, 0)) 0 0 #2a2623;
+}
+
+.maze-cell.wall-n { --n: 1; }
+.maze-cell.wall-e { --e: 1; }
+.maze-cell.wall-s { --s: 1; }
+.maze-cell.wall-w { --w: 1; }
+
+.maze-cell.lair {
+  background:
+    radial-gradient(circle at 50% 55%, #2a2623 0 22%, transparent 23%),
+    #b89a6a;
+}

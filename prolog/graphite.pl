@@ -14,9 +14,11 @@ matching Typst template as JSON.
 :- use_module(library(json)).
 :- use_module(rng).
 :- use_module(games/golf, []).
+:- use_module(games/labyrinth, []).
 
 %!  game(?Game) is nondet.
 game(golf).
+game(labyrinth).
 
 %!  generate(+Game, +Seed, -Doc:dict) is det.
 generate(Game, Seed, Doc) :-

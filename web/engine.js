@@ -5,17 +5,26 @@
 import { TypstSnippet } from "@myriaddreamin/typst.ts/contrib/snippet";
 import compilerWasm from "@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?url";
 import rendererWasm from "@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url";
+import { tiles } from "./tiles.js";
 
 const typstSources = import.meta.glob("/typst/**/*.typ", {
   query: "?raw",
   import: "default",
   eager: true,
 });
-const typstImages = import.meta.glob("/typst/**/*.png", {
+
+// Monster Builder parts for LABYRINTH (typst/lib/monster.typ), keyed like tiles.
+const monsterUrls = import.meta.glob("/typst/monsters/*.png", {
   query: "?url",
   import: "default",
   eager: true,
 });
+const images = {
+  ...tiles,
+  ...Object.fromEntries(
+    Object.entries(monsterUrls).map(([path, url]) => [path.replace(/^\/typst/, ""), url]),
+  ),
+};
 
 // Prolog ------------------------------------------------------------------
 
@@ -60,9 +69,9 @@ async function loadTypst() {
     await $typst.addSource(local(path), source);
   }
   await Promise.all(
-    Object.entries(typstImages).map(async ([path, url]) => {
+    Object.entries(images).map(async ([path, url]) => {
       const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-      await $typst.mapShadow(local(path), bytes);
+      await $typst.mapShadow(path, bytes);
     }),
   );
   return $typst;
@@ -76,10 +85,28 @@ function compileOptions(game, json, paper, theme) {
 // sheets as a fold-and-staple booklet (typst/impose.typ). Mirrors render.sh.
 const pocket = (paper) => paper === "pocket-a4";
 
-export async function svg(game, json, paper, theme) {
+// The preview SVG plus the page stops the game template marks with `<stop>`
+// metadata, for the preview's page rail (web/ui/scroller.js). Both come from
+// one compile. The preview shows the pocket pages themselves, not the imposed
+// sheets.
+export async function preview(game, json, paper, theme) {
   typst ??= loadTypst();
-  // The preview shows the pocket pages themselves, not the imposed sheets.
-  return (await typst).svg(compileOptions(game, json, pocket(paper) ? "a6" : paper, theme));
+  const $typst = await typst;
+  const options = compileOptions(game, json, pocket(paper) ? "a6" : paper, theme);
+  const compiler = await $typst.getCompiler();
+  const { vectorData, stops } = await compiler.runWithWorld(options, async (world) => {
+    const { diagnostics } = await world.compile({ diagnostics: "unix" });
+    if (diagnostics?.length) throw new Error(diagnostics.join("\n"));
+    return {
+      vectorData: world.vector().result,
+      stops: await world.query({ selector: "<stop>", field: "value" }),
+    };
+  });
+  return { svg: await $typst.svg({ vectorData }), stops };
+}
+
+export async function svg(game, json, paper, theme) {
+  return (await preview(game, json, paper, theme)).svg;
 }
 
 export async function pdf(game, json, paper, theme) {

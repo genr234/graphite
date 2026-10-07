@@ -1,0 +1,143 @@
+/* Graphite design tokens.
+ *
+ * The UI is a physical device lit from above: a matte chassis, plates
+ * screwed onto it, wells recessed into it and keys standing proud of it.
+ * Every surface reads its depth from the light/shade tokens below, so the
+ * dark ("graphite") variant only has to swap colours, never shadows. */
+
+:root {
+  color-scheme: light;
+
+  /* Materials */
+  --chassis: #ebeae6;
+  --chassis-deep: #e1e0db;
+  --plate: #f4f3ef;
+  --well: #dedcd6;
+  --key-top: #fafaf7;
+  --key-bottom: #ebe9e4;
+  --key-down-top: #e7e5df;
+  --key-down-bottom: #efeee9;
+  --readout: #2b2c2a;
+  --readout-glass: rgb(255 255 255 / 0.06);
+  --paper: #ffffff;
+
+  /* Ink */
+  --ink: #2c2c2a;
+  --ink-soft: #5d5b56;
+  --engrave: #8f8c84;
+  --ink-disabled: #c4c2bc;
+  --readout-ink: #f1eee4;
+
+  /* Signal colours, used sparingly like the dots on a Braun panel */
+  --accent: #ee5a1c;
+  --accent-deep: #c9430d;
+  --accent-ink: #ffffff;
+  --error: #e0261b;
+
+  /* Light: highlights face up, shade falls down */
+  --hi: rgb(255 255 255 / 0.95);
+  --hi-soft: rgb(255 255 255 / 0.6);
+  --shade: rgb(30 28 24 / 0.1);
+  --shade-strong: rgb(30 28 24 / 0.22);
+  --edge: rgb(30 28 24 / 0.1);
+  --edge-strong: rgb(30 28 24 / 0.35);
+
+  /* Depth recipes */
+  --raised:
+    inset 0 1.5px 0 var(--hi),
+    inset 0 -3px 1px rgb(0 0 0 / 0.06),
+    0 0 0 1px var(--edge),
+    0 1px 1px var(--shade-strong),
+    0 3px 6px -1px var(--shade),
+    0 10px 18px -8px var(--shade-strong);
+  --raised-down:
+    inset 0 1px 2px rgb(0 0 0 / 0.1),
+    inset 0 -1px 0 var(--hi-soft),
+    0 0 0 1px var(--edge),
+    0 1px 0 var(--hi-soft);
+  --recessed:
+    inset 0 2px 4px var(--shade-strong),
+    inset 0 1px 1px var(--shade),
+    0 1px 0 var(--hi);
+  --plate-lift:
+    inset 0 1px 0 var(--hi),
+    0 0 0 1px var(--edge),
+    0 2px 4px -2px var(--shade-strong),
+    0 18px 36px -20px var(--shade-strong);
+  --engraved: 0 1px 0 var(--hi);
+
+  /* Shape */
+  --r-key: 9px;
+  --r-well: 12px;
+  --r-plate: 18px;
+  --r-round: 999px;
+
+  /* Rhythm */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  /* Type */
+  --font: "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --t-label: 600 10px/1 var(--font);
+  --t-key: 500 13px/1 var(--font);
+  --t-body: 400 14px/1.45 var(--font);
+
+  --press: 80ms ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --chassis: #2a2b2a;
+    --chassis-deep: #232423;
+    --plate: #323332;
+    --well: #1e1f1e;
+    --key-top: #4a4b49;
+    --key-bottom: #3c3d3b;
+    --key-down-top: #333432;
+    --key-down-bottom: #3a3b39;
+    --readout: #141514;
+    --paper: #f7f6f2;
+    --ink: #ecebe6;
+    --ink-soft: #b5b3ac;
+    --engrave: #85837d;
+    --ink-disabled: #5c5d5a;
+    --hi: rgb(255 255 255 / 0.12);
+    --hi-soft: rgb(255 255 255 / 0.05);
+    --shade: rgb(0 0 0 / 0.3);
+    --shade-strong: rgb(0 0 0 / 0.55);
+    --edge: rgb(0 0 0 / 0.45);
+    --edge-strong: rgb(0 0 0 / 0.7);
+    --engraved: 0 -1px 0 rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --chassis: #2a2b2a;
+  --chassis-deep: #232423;
+  --plate: #323332;
+  --well: #1e1f1e;
+  --key-top: #4a4b49;
+  --key-bottom: #3c3d3b;
+  --key-down-top: #333432;
+  --key-down-bottom: #3a3b39;
+  --readout: #141514;
+  --paper: #f7f6f2;
+  --ink: #ecebe6;
+  --ink-soft: #b5b3ac;
+  --engrave: #85837d;
+  --ink-disabled: #5c5d5a;
+  --hi: rgb(255 255 255 / 0.12);
+  --hi-soft: rgb(255 255 255 / 0.05);
+  --shade: rgb(0 0 0 / 0.3);
+  --shade-strong: rgb(0 0 0 / 0.55);
+  --edge: rgb(0 0 0 / 0.45);
+  --edge-strong: rgb(0 0 0 / 0.7);
+  --engraved: 0 -1px 0 rgb(0 0 0 / 0.6);
+}

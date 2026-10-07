@@ -55,9 +55,16 @@
   })
 }
 
+// Preview outline: one stop per page section, read by the app's page rail
+// (web/ui/scroller.js). `mark` is "major" for a section start, else "minor".
+#let stop(label, short, group: none, mark: "minor") = context [
+  #metadata((page: here().page(), label: label, short: short, group: group, mark: mark)) <stop>
+]
+
 // Cover ---------------------------------------------------------------------
 
 #page(footer: none, align(center + horizon, {
+  stop("Cover", "◆", mark: "major")
   text(48pt * kt, font: mono, weight: "bold", tracking: 0.08em)[GOLF]
   v(0.4cm * k)
   text(11pt * kt, fill: faint)[#theme.name courses · seed #data.seed]
@@ -78,6 +85,7 @@
 }
 
 #pagebreak()
+#stop("How to play", "?", mark: "major")
 #title(24pt)[How to play]
 #v(0.3cm * k)
 #set par(justify: true, spacing: 0.75em)
@@ -176,6 +184,7 @@
 
   // Course page: name badge, Mulligans, total score.
   pagebreak(weak: true)
+  stop(course.name, str(course.number), group: "Course " + str(course.number), mark: "major")
   set par(justify: false)
   align(center + horizon, {
     title(22pt)[Course \##course.number]
@@ -194,6 +203,7 @@
   // One page per hole.
   for hole in course.holes {
     pagebreak()
+    stop("Hole " + str(hole.number), str(hole.number), group: course.name)
     grid(columns: (1fr, auto), align: bottom,
       [#text(8pt * kt, fill: faint)[#course.name] \ #title(20pt)[Hole #hole.number]],
       [#text(9pt * kt, font: mono)[Par #hole.par] #h(0.6em)

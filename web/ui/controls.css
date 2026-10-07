@@ -1,0 +1,224 @@
+/* Graphite controls. Built only from tokens.css; see web/ui/README.md. */
+
+/* Plate: a panel fixed onto the chassis ---------------------------------- */
+
+.plate {
+  background: linear-gradient(var(--plate), var(--chassis));
+  border-radius: var(--r-plate);
+  box-shadow: var(--plate-lift);
+}
+
+/* Well: anything sunk into the chassis ----------------------------------- */
+
+.well {
+  background: var(--well);
+  border-radius: var(--r-well);
+  box-shadow: var(--recessed);
+}
+
+/* Label: engraved, uppercase, quiet -------------------------------------- */
+
+.label {
+  font: var(--t-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--engrave);
+  text-shadow: var(--engraved);
+}
+
+.field {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: start;
+}
+
+.field > .label {
+  padding-left: 2px;
+}
+
+/* Key: the one button ---------------------------------------------------- */
+
+.key {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 34px;
+  padding: 0 var(--s-4);
+  border: 0;
+  border-radius: var(--r-key);
+  background: linear-gradient(var(--key-top), var(--key-bottom));
+  box-shadow: var(--raised);
+  color: var(--ink);
+  font: var(--t-key);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--press),
+    box-shadow var(--press),
+    background var(--press);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:active:not(:disabled),
+.key[aria-checked="true"],
+.key[aria-pressed="true"] {
+  transform: translateY(1px);
+  background: linear-gradient(var(--key-down-top), var(--key-down-bottom));
+  box-shadow: var(--raised-down);
+}
+
+.key:disabled {
+  cursor: default;
+  color: var(--ink-disabled);
+  background: var(--key-bottom);
+  box-shadow: 0 0 0 1px var(--edge);
+}
+
+.key:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Pixel icons are drawn on a 24px grid: keep them at 24px so every
+   pixel lands on a device pixel. */
+.icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+.key .icon {
+  margin-left: -4px;
+}
+
+.key--round .icon {
+  margin: 0;
+}
+
+.key--signal .icon {
+  filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.2));
+}
+
+/* Round key, for single-glyph actions */
+.key--round {
+  width: 38px;
+  min-height: 38px;
+  padding: 0;
+  border-radius: var(--r-round);
+}
+
+/* Signal key: the one orange action on a panel */
+.key--signal {
+  background: linear-gradient(#ff7a3d, var(--accent) 45%, var(--accent-deep));
+  color: var(--accent-ink);
+  text-shadow: 0 -1px 0 rgb(0 0 0 / 0.2);
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.45),
+    inset 0 -3px 1px rgb(0 0 0 / 0.12),
+    0 0 0 1px rgb(120 30 0 / 0.45),
+    0 1px 1px var(--shade-strong),
+    0 4px 10px -2px rgb(200 70 10 / 0.35);
+}
+
+.key--signal:active:not(:disabled) {
+  background: linear-gradient(var(--accent-deep), var(--accent));
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 0.25),
+    0 0 0 1px rgb(120 30 0 / 0.5);
+}
+
+.key--signal:disabled {
+  color: rgb(255 255 255 / 0.75);
+  text-shadow: none;
+  background: var(--accent);
+  opacity: 0.4;
+  box-shadow: 0 0 0 1px rgb(120 30 0 / 0.3);
+}
+
+/* Bezel: a key seated in its own well (reference style 2) */
+.bezel {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: calc(var(--r-key) + 3px);
+  background: var(--well);
+  box-shadow: var(--recessed);
+}
+
+.bezel.key--round,
+.bezel:has(.key--round) {
+  border-radius: var(--r-round);
+}
+
+/* Bank: a row of latching keys, one down (reference style 1) -------------- */
+
+.bank {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: calc(var(--r-key) + 3px);
+  background: var(--edge-strong);
+  box-shadow: 0 1px 0 var(--hi);
+}
+
+.bank > .key {
+  min-height: 46px;
+  min-width: 64px;
+  padding: 0 var(--s-3);
+  border-radius: 3px;
+}
+
+.bank > .key:first-child {
+  border-radius: var(--r-key) 3px 3px var(--r-key);
+}
+
+.bank > .key:last-child {
+  border-radius: 3px var(--r-key) var(--r-key) 3px;
+}
+
+
+/* Readout: a smoked-glass display for values the user types -------------- */
+
+.readout {
+  position: relative;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: calc(var(--r-key) + 3px);
+  background: var(--well);
+  box-shadow: var(--recessed);
+}
+
+.readout input {
+  width: 10ch;
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-key);
+  background:
+    linear-gradient(var(--readout-glass), transparent 50%),
+    var(--readout);
+  box-shadow:
+    inset 0 2px 6px rgb(0 0 0 / 0.6),
+    inset 0 0 0 1px rgb(0 0 0 / 0.5);
+  color: var(--readout-ink);
+  font: 500 17px/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  caret-color: var(--accent);
+}
+
+.readout input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key {
+    transition: none;
+  }
+}
